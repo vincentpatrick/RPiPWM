@@ -1,0 +1,39 @@
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+trigger = 23
+echo = 17
+led = 20
+GPIO.setup(trigger, GPIO.OUT)
+GPIO.setup(echo, GPIO.IN)
+GPIO.setup(led, GPIO.OUT)
+
+def distance():
+    GPIO.output(trigger, True)
+    time.sleep(0.00001)
+    GPIO.output(trigger, False)
+    start = time.time()
+    stop = time.time()
+    while GPIO.input(ECHO) ==0:
+        start = time.time()
+    while GPIO.input(ECHO) ==1:
+        stop = time.time()
+    distance= ((stop - start) *17000)
+    return distance
+
+if __name__ =='__main__':
+    try:
+        while True:
+            dist = distance()
+            print ("%.1f cm" %dist)
+            
+            
+            GPIO.output(LED,GPIO.HIGH)
+            time.sleep(dist/10)
+            GPIO.output(LED,GPIO.LOW)
+            time.sleep(dist/10)
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Stop")
+        GPIO.cleanup()
