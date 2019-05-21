@@ -1,39 +1,80 @@
 import RPi.GPIO as GPIO
 import time
 
+#set up the mode
 GPIO.setmode(GPIO.BCM)
-trigger = 23
-echo = 17
-led = 20
-GPIO.setup(trigger, GPIO.OUT)
-GPIO.setup(echo, GPIO.IN)
-GPIO.setup(led, GPIO.OUT)
 
+#set up pin
+TRIG = 23
+ECHO = 17
+LED = 18
+
+#set up input output
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+GPIO.setup(LED, GPIO.OUT)
+
+#function to calculate the distance
 def distance():
-    GPIO.output(trigger, True)
+    GPIO.output(TRIG, True)
     time.sleep(0.00001)
-    GPIO.output(trigger, False)
+    GPIO.output(TRIG, False)
+    
+    #get the time
     start = time.time()
     stop = time.time()
+
+    #start time
     while GPIO.input(ECHO) ==0:
         start = time.time()
+
+    #finish time
     while GPIO.input(ECHO) ==1:
         stop = time.time()
+
+    #calculate the distance
     distance= ((stop - start) *17000)
     return distance
-
+pwm =GPIO.PWM(LED, 80)
+pwm.start(0)
 if __name__ =='__main__':
     try:
         while True:
             dist = distance()
+            #print out the distance
             print ("%.1f cm" %dist)
-            
-            
-            GPIO.output(LED,GPIO.HIGH)
-            time.sleep(dist/10)
-            GPIO.output(LED,GPIO.LOW)
-            time.sleep(dist/10)
             time.sleep(1)
+            if 45<distance()<50:
+                pwm.ChangeDutyCycle(10)
+            elif 40<distance()<45:
+                pwm.ChangeDutyCycle(20)
+            elif 35<distance()<40:
+                pwm.ChangeDutyCycle(30)
+            elif 30<distance()<35:
+                pwm.ChangeDutyCycle(40)
+            elif 25<distance()<30:
+                pwm.ChangeDutyCycle(60)
+            elif 20<distance()<25:
+                pwm.ChangeDutyCycle(70)
+            elif 15<distance()<20:
+                pwm.ChangeDutyCycle(80)
+            elif 10<distance()<15:
+                pwm.ChangeDutyCycle(90)
+            elif 5<distance()<10:
+                pwm.ChangeDutyCycle(100)
+            else:
+                pwm.ChangeDutyCycle(0)
+            #the LED will blink faster when the object is closer
+#            GPIO.output(LED,GPIO.HIGH)
+#            time.sleep(2)
+#            GPIO.output(LED,GPIO.LOW)
+#            time.sleep(2)
+
+            #measure every second
+            time.sleep(1)
+    #stop the program when user press ctrl + C
     except KeyboardInterrupt:
         print("Stop")
         GPIO.cleanup()
+        
+pwm.stop()
